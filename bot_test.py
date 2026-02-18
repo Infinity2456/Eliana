@@ -6,6 +6,7 @@ bot = telebot.TeleBot(TOKEN)
 logs_number = 0
 eat_person = ""
 ai = 0
+marry_data = []
 
 def log_number(logs_number):
     if os.path.exists(fr"/root/C#/Log/{logs_number}.log"):
@@ -514,94 +515,6 @@ def panel(message):
         markup.add(btn1 , btn2, btn3)
         bot.send_message(message.chat.id, text , reply_markup=markup)
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_inline(call):
-    connect = sqlite3.connect(fr"/root/C#/value.db", check_same_thread=False)
-    cursor_collection = connect.cursor()
-    id_message = call.from_user.id
-    ball = get_money(id_message)
-    if call.data == "btn1":
-        if 100 <= ball[0]:
-            add = int(ball[0]) - 100
-            set_money(add,id_message)
-            cursor_collection.execute("SELECT value_1 FROM my_table WHERE id = ?", (call.from_user.id,))
-            rows1 = cursor_collection.fetchone()
-            add1 = int(rows1[0]) + 1
-            cursor_collection.execute("UPDATE my_table SET value_1 = ? WHERE id = ?", (add1, call.from_user.id))
-            connect.commit()
-            bot.answer_callback_query(call.id, "Успешно!")
-        else:
-            bot.answer_callback_query(call.id, "Недостаточно скрепок!")
-    elif call.data == "btn2":
-        if 200 <= ball[0]:
-            add = int(ball[0]) - 200
-            set_money(add,id_message)
-            cursor_collection.execute("SELECT value_2 FROM my_table WHERE id = ?", (call.from_user.id,))
-            rows1 = cursor_collection.fetchone()
-            add1 = int(rows1[0]) + 1
-            cursor_collection.execute("UPDATE my_table SET value_2 = ? WHERE id = ?", (add1, call.from_user.id))
-            connect.commit()
-            bot.answer_callback_query(call.id, "Успешно!")
-        else:
-            bot.answer_callback_query(call.id, "Недостаточно скрепок!")
-    elif call.data == "btn3":
-        if 700 <= ball[0]:
-            add = int(ball[0]) - 700
-            set_money(add,id_message)
-            cursor_collection.execute("SELECT value_3 FROM my_table WHERE id = ?", (call.from_user.id,))
-            rows1 = cursor_collection.fetchone()
-            add1 = int(rows1[0]) + 1
-            cursor_collection.execute("UPDATE my_table SET value_3 = ? WHERE id = ?", (add1, call.from_user.id))
-            connect.commit()
-            bot.answer_callback_query(call.id, "Успешно!")
-        else:
-            bot.answer_callback_query(call.id, "Недостаточно скрепок!")
-    elif call.data == "btn4":
-        if 1000 <= ball[0]:
-            add = int(ball[0]) - 1000
-            set_money(add,id_message)
-            cursor_collection.execute("SELECT value_4 FROM my_table WHERE id = ?", (call.from_user.id,))
-            rows1 = cursor_collection.fetchone()
-            add1 = int(rows1[0]) + 1
-            cursor_collection.execute("UPDATE my_table SET value_4 = ? WHERE id = ?", (add1, call.from_user.id))
-            connect.commit()
-            bot.answer_callback_query(call.id, "Успешно!")
-        else:
-            bot.answer_callback_query(call.id, "Недостаточно скрепок!")
-    elif call.data == "btn_ai":
-        global ai
-        text = ""
-        if 1 == ai:
-            ai = 0
-            text = 'Элиана включена'
-        elif 0 == ai:
-            ai = 1
-            text = 'Элиана выключена'
-        bot.answer_callback_query(call.id, text)
-    elif call.data == "btn_rp":
-        global rp_mode_switch
-        text = ""
-        if 1 == rp_mode_switch:
-            rp_mode_switch = 0
-            text = 'Рп режим выключен'
-        elif 0 == rp_mode_switch:
-            rp_mode_switch = 1
-            text = 'Рп режим включен'
-        bot.answer_callback_query(call.id, text)
-    elif call.data == "btn_ball":
-        connect_ball = sqlite3.connect(fr"/root/C#/game.db", check_same_thread=False)
-        cursor_ball = connect_ball.cursor()
-        cursor_ball.execute("SELECT id FROM food_entries")
-        rows_id = cursor_ball.fetchall()
-        text = "Баланс всех пользователей:\n"
-        for row in rows_id:
-            cursor_ball.execute("SELECT eat_point FROM food_entries WHERE id = ?", (row[0],))
-            rows_ball = cursor_ball.fetchone()
-            text += f"Пользователь с id {row[0]}: {rows_ball[0]} скрепок\n"
-        bot.answer_callback_query(call.id, text)
-        connect_ball.close()
-    connect.close()
-
 @bot.message_handler(regexp=r"^!-$")
 def rep_minus(message):
     target_id = message.reply_to_message.from_user.id
@@ -669,5 +582,154 @@ def kto(message):
     random_namber = random.randint(1,100)
     text = "Ты " + reqeust + " на " + str(random_namber) + "%."
     bot.send_message(message.chat.id, text)
+
+@bot.message_handler(regexp='!пожениться')
+def marry(message):
+    global marry_data
+    id_user = message.from_user.id
+    id_user_reply = message.reply_to_message.from_user.id
+    nick_user_reply = message.reply_to_message.from_user.first_name
+    nick_user = message.from_user.first_name
+    if id_user == id_user_reply:
+        text = "Вы не можете пожениться на себе!"
+        bot.send_message(message.chat.id, text)
+    else:
+        marry_data = [id_user, id_user_reply,message.chat.id,message.message_id,nick_user,nick_user_reply]
+        text =  f"{nick_user_reply} вы согласны?"
+        markup = types.InlineKeyboardMarkup()
+        btn1 = types.InlineKeyboardButton("Да", callback_data="marry_yes")
+        btn2 = types.InlineKeyboardButton("Нет", callback_data="marry_no")
+        markup.add(btn1, btn2)
+        bot.send_message(message.chat.id, text,reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    connect = sqlite3.connect(fr"/root/C#/value.db", check_same_thread=False)
+    cursor_collection = connect.cursor()
+    id_message = call.from_user.id
+    ball = get_money(id_message)
+    if call.data == "btn1":
+        if 100 <= ball[0]:
+            add = int(ball[0]) - 100
+            set_money(add,id_message)
+            cursor_collection.execute("SELECT value_1 FROM my_table WHERE id = ?", (call.from_user.id,))
+            rows1 = cursor_collection.fetchone()
+            add1 = int(rows1[0]) + 1
+            cursor_collection.execute("UPDATE my_table SET value_1 = ? WHERE id = ?", (add1, call.from_user.id))
+            connect.commit()
+            bot.answer_callback_query(call.id, "Успешно!")
+        else:
+            bot.answer_callback_query(call.id, "Недостаточно скрепок!")
+        connect.close()
+    elif call.data == "btn2":
+        if 200 <= ball[0]:
+            add = int(ball[0]) - 200
+            set_money(add,id_message)
+            cursor_collection.execute("SELECT value_2 FROM my_table WHERE id = ?", (call.from_user.id,))
+            rows1 = cursor_collection.fetchone()
+            add1 = int(rows1[0]) + 1
+            cursor_collection.execute("UPDATE my_table SET value_2 = ? WHERE id = ?", (add1, call.from_user.id))
+            connect.commit()
+            bot.answer_callback_query(call.id, "Успешно!")
+        else:
+            bot.answer_callback_query(call.id, "Недостаточно скрепок!")
+        connect.close()
+    elif call.data == "btn3":
+        if 700 <= ball[0]:
+            add = int(ball[0]) - 700
+            set_money(add,id_message)
+            cursor_collection.execute("SELECT value_3 FROM my_table WHERE id = ?", (call.from_user.id,))
+            rows1 = cursor_collection.fetchone()
+            add1 = int(rows1[0]) + 1
+            cursor_collection.execute("UPDATE my_table SET value_3 = ? WHERE id = ?", (add1, call.from_user.id))
+            connect.commit()
+            bot.answer_callback_query(call.id, "Успешно!")
+        else:
+            bot.answer_callback_query(call.id, "Недостаточно скрепок!")
+        connect.close()
+    elif call.data == "btn4":
+        if 1000 <= ball[0]:
+            add = int(ball[0]) - 1000
+            set_money(add,id_message)
+            cursor_collection.execute("SELECT value_4 FROM my_table WHERE id = ?", (call.from_user.id,))
+            rows1 = cursor_collection.fetchone()
+            add1 = int(rows1[0]) + 1
+            cursor_collection.execute("UPDATE my_table SET value_4 = ? WHERE id = ?", (add1, call.from_user.id))
+            connect.commit()
+            bot.answer_callback_query(call.id, "Успешно!")
+        else:
+            bot.answer_callback_query(call.id, "Недостаточно скрепок!")
+        connect.close()
+    elif call.data == "btn_ai":
+        global ai
+        text = ""
+        if 1 == ai:
+            ai = 0
+            text = 'Элиана включена'
+        elif 0 == ai:
+            ai = 1
+            text = 'Элиана выключена'
+        bot.answer_callback_query(call.id, text)
+    elif call.data == "btn_rp":
+        global rp_mode_switch
+        text = ""
+        if 1 == rp_mode_switch:
+            rp_mode_switch = 0
+            text = 'Рп режим выключен'
+        elif 0 == rp_mode_switch:
+            rp_mode_switch = 1
+            text = 'Рп режим включен'
+        bot.answer_callback_query(call.id, text)
+    elif call.data == "btn_ball":
+        connect_ball = sqlite3.connect(fr"/root/C#/game.db", check_same_thread=False)
+        cursor_ball = connect_ball.cursor()
+        cursor_ball.execute("SELECT id FROM food_entries")
+        rows_id = cursor_ball.fetchall()
+        text = "Баланс всех пользователей:\n"
+        for row in rows_id:
+            cursor_ball.execute("SELECT eat_point FROM food_entries WHERE id = ?", (row[0],))
+            rows_ball = cursor_ball.fetchone()
+            text += f"Пользователь с id {row[0]}: {rows_ball[0]} скрепок\n"
+        bot.answer_callback_query(call.id, text)
+        connect_ball.close()
+    elif call.data == "marry_yes":
+        print(marry_data)
+        connect_marry = sqlite3.connect(fr"/root/C#/wedding.db", check_same_thread=False)
+        cursor_marry = connect_marry.cursor()
+        id_user = marry_data[0]
+        chat_id = marry_data[2]
+        message_id = marry_data[3]
+        name_user = marry_data[4]
+        name_user_reply = marry_data[5]
+        id_user_reply = str(marry_data[1])
+        print(id_user)
+        print(id_user_reply)
+        cursor_marry.execute("SELECT id FROM my_table WHERE id = ?", (call.from_user.id,))
+        rows_id = cursor_marry.fetchone()
+        print(rows_id[0])
+        if str(rows_id[0]) == id_user_reply:
+            bot.answer_callback_query(call.id, "Вы уже состоите в браке!")
+        else:
+            if str(call.from_user.id) == id_user_reply.replace(' ', ''):
+                print("ok")
+                cursor_marry.execute("INSERT OR IGNORE INTO my_table (id, id_2) VALUES (?, ?)", (id_user, id_user_reply))
+                cursor_marry.execute("INSERT OR IGNORE INTO my_table (id, id_2) VALUES (?, ?)", (id_user_reply, id_user))
+                connect_marry.commit()
+                bot.send_message(chat_id=chat_id, text=f"Поздравляю {name_user} и {call.from_user.first_name} с бракосочетанием!")
+            else:
+                print("no")
+                print(call.from_user.id)
+        connect_marry.close()
+    elif call.data == "marry_no":
+        name_user = marry_data[4]
+        name_user_reply = marry_data[5]
+        chat_id = marry_data[2]
+        message_id = marry_data[3]
+        id_user_reply = str(marry_data[1])
+        print(call.from_user.id)
+        print(id_user_reply)
+        if str(call.from_user.id) == id_user_reply:
+            bot.send_message(chat_id=chat_id, text=f"{name_user_reply} отказался от предложения {name_user}!")
+
 
 bot.infinity_polling()
