@@ -1,7 +1,7 @@
-import telebot , os, ollama , logging , random , sqlite3
+import telebot , os, ollama , logging , random , sqlite3 , subprocess
 from telebot import types
 from apscheduler.schedulers.background import BackgroundScheduler
-from config import TOKEN , model , templat , promt1 , promt2 , cont , promt3 , rp_mode_switch , eat_switch , role_chat1 , magazine_switch # pyright: ignore[reportAttributeAccessIssue]
+from config import TOKEN , model , templat , promt1 , promt2 , cont , version , rp_mode_switch , eat_switch , role_chat1 , magazine_switch # pyright: ignore[reportAttributeAccessIssue]
 bot = telebot.TeleBot(TOKEN)
 logs_number = 0
 eat_person = ""
@@ -9,7 +9,7 @@ ai = 0
 marry_data = []
 
 def log_number(logs_number):
-    if os.path.exists(fr"/root/C#/Log/{logs_number}.log"):
+    if os.path.exists(fr"C:\Users\M4lph4s\Desktop\bot\Logs\{logs_number}.log"):
         logs_number = logs_number + 1
         log_number(logs_number=logs_number)
     else:
@@ -44,7 +44,7 @@ scheduler.start()
 
 ## Выдает все описания пользователей
 def get_all_opisanie(message):
-    conn_opisanie = sqlite3.connect(fr"/root/C#/opisanie.db")
+    conn_opisanie = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\opisanie.db")
     cursor_opisanie = conn_opisanie.cursor()
     cursor_opisanie.execute('SELECT opisanie FROM my_table')
     rows = cursor_opisanie.fetchall()
@@ -53,7 +53,7 @@ def get_all_opisanie(message):
 
 ## Выдает описание пользователя
 def get_opisanie(message):
-    conn_opisanie = sqlite3.connect(fr"/root/C#/opisanie.db")
+    conn_opisanie = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\opisanie.db")
     cursor_opisanie = conn_opisanie.cursor()
     cursor_opisanie.execute("SELECT opisanie FROM my_table WHERE id = ?", (message.from_user.id,))
     rows = cursor_opisanie.fetchone()
@@ -63,7 +63,7 @@ def get_opisanie(message):
 
 ## Устанавливает описание пользователя
 def set_opisanie(message , id_message):
-    conn_opisanie = sqlite3.connect(fr"/root/C#/opisanie.db")
+    conn_opisanie = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\opisanie.db")
     cursor_opisanie = conn_opisanie.cursor()
     add = message.text.replace('!сменить описание ','')
     cursor_opisanie.execute("UPDATE my_table SET opisanie = ? WHERE id = ?", (add, id_message))
@@ -73,7 +73,7 @@ def set_opisanie(message , id_message):
 
 ## Выдает количество скрепок пользователя
 def get_money(id_message):
-    conn = sqlite3.connect(fr"/root/C#/game.db")
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\game.db")
     cursor = conn.cursor()
     cursor.execute("SELECT eat_point FROM food_entries WHERE id = ?", (id_message ,))
     rows = cursor.fetchone()
@@ -82,7 +82,7 @@ def get_money(id_message):
 
 ## Устанавливает количество скрепок пользователя
 def set_money(add,id_message):
-    conn = sqlite3.connect(fr"/root/C#/game.db")
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\game.db")
     cursor = conn.cursor()
     cursor.execute("UPDATE food_entries SET eat_point = ? WHERE id = ?", (add, id_message))
     conn.commit()
@@ -91,7 +91,7 @@ def set_money(add,id_message):
 
 ## Устанавливает количество скрепок пользователя
 def set_money_reply(add,message):
-    conn = sqlite3.connect(fr"/root/C#/game.db")
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\game.db")
     cursor = conn.cursor()
     cursor.execute("UPDATE food_entries SET eat_point = ? WHERE id = ?", (add, message.reply_to_message.from_user.id))
     conn.commit()
@@ -100,7 +100,7 @@ def set_money_reply(add,message):
 
 ## Выдает количество скрепок пользователя
 def get_money_reply(message):
-    conn = sqlite3.connect(fr"/root/C#/game.db")
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\game.db")
     cursor = conn.cursor()
     cursor.execute("SELECT eat_point FROM food_entries WHERE id = ?", (message.reply_to_message.from_user.id,))
     rows = cursor.fetchone()
@@ -109,7 +109,7 @@ def get_money_reply(message):
 
 ## Устанавливает количество скрепок пользователя в 0
 def set_money_0_reply(message):
-    conn = sqlite3.connect(fr"/root/C#/game.db")
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\game.db")
     cursor = conn.cursor()
     cursor.execute("UPDATE food_entries SET eat_point = ? WHERE id = ?", (0, message.reply_to_message.from_user.id))
     conn.commit()
@@ -118,7 +118,7 @@ def set_money_0_reply(message):
 
 ## Выдает репутацию пользователя
 def get_rep(id_message):
-    conn = sqlite3.connect(fr"/root/C#/reputation.db")
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\reputation.db")
     cursor = conn.cursor()
     cursor.execute("SELECT value FROM my_table WHERE id = ?", (id_message,))
     rows = cursor.fetchone()
@@ -127,7 +127,7 @@ def get_rep(id_message):
 
 ## Устанавливает репутацию пользователя
 def set_rep(add,id_message):
-    conn = sqlite3.connect(fr"/root/C#/reputation.db")
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\reputation.db")
     cursor = conn.cursor()
     cursor.execute("UPDATE my_table SET value = ? WHERE id = ?", (add, id_message))
     conn.commit()
@@ -135,7 +135,7 @@ def set_rep(add,id_message):
     return()
 
 def get_vip(id_message):
-    conn = sqlite3.connect(fr"/root/C#/vip.db")
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\vip.db")
     cursor = conn.cursor()
     cursor.execute("SELECT value FROM my_table WHERE id = ?", (id_message,))
     rows = cursor.fetchone()
@@ -143,12 +143,14 @@ def get_vip(id_message):
     return(rows[0])
 
 def set_vip(add,id_message):
-    conn = sqlite3.connect(fr"/root/C#/vip.db")
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\vip.db")
     cursor = conn.cursor()
     cursor.execute("UPDATE my_table SET value = ? WHERE id = ?", (add, id_message))
     conn.commit()
     conn.close()
     return()
+
+subprocess.run(['python',''])
 
 
 
@@ -156,7 +158,7 @@ print("Бот запущен.")
 
 @bot.message_handler(regexp="регистрация")
 def reg(message):
-    connect = sqlite3.connect(fr"/root/C#/value.db", check_same_thread=False)
+    connect = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\value.db", check_same_thread=False)
     cursor_collection = connect.cursor()
     set_money(add=0,id_message=message.from_user.id)
     set_opisanie(message="",id_message=message.from_user.id)
@@ -174,11 +176,11 @@ def reg(message):
 @bot.message_handler(regexp="!Элиана")
 def DeepSeek(message):
     if 0 == ai:
-        connect_ = sqlite3.connect(fr"/root/C#/context.db", check_same_thread=False)
+        connect_ = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\context.db", check_same_thread=False)
         cursor_ = connect_.cursor()
         cursor_.execute("SELECT context FROM my_table WHERE id = ?", (1,))
-        rows = cursor_.fetchone()
-        conn_opisanie = sqlite3.connect(fr"/root/C#/opisanie.db")
+        mem = cursor_.fetchone()
+        conn_opisanie = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\opisanie.db")
         cursor_opisanie = conn_opisanie.cursor()
         cursor_opisanie.execute('SELECT opisanie FROM my_table')
         rows = cursor_opisanie.fetchall()
@@ -186,17 +188,12 @@ def DeepSeek(message):
         row1 = row.replace("',), ('"," ")
         row2 = row1.replace("[('","")
         row3 = row2.replace("',)]","")
-        print(row.replace("',), ('"," "))
-        if 1 == rp_mode_switch:
-            if 1 == eat_switch:
-                prompt = templat + f'Недавно тебя покормил {eat_person}' + row3 + cont + message.from_user.first_name + promt1 + 'История всех сообщений в чате:' + str(rows[0]) + str(message.text.replace('!Элина', ''))
-            else:
-                prompt = templat + row3 + cont + message.from_user.first_name + promt1 + 'История всех сообщений в чате:' + str(rows[0]) + str(message.text.replace('!Элина', ''))
-        else:
-            if 1 == eat_switch:
-                prompt = templat + f'Недавно тебя покормил {eat_person}' + row3 + cont + message.from_user.first_name + promt1 + 'История всех сообщений в чате:' + str(rows[0]) + str(message.text.replace('!Элина', ''))
-            else:
-                prompt = templat + row3 + cont + message.from_user.first_name + promt1 + 'История всех сообщений в чате:' + str(rows[0]) + str(message.text.replace('!Элина', ''))
+        print(row3)
+        print(' ')
+        print(' ')
+        print(' ')
+        print(mem[0])
+        prompt = templat + row3 + cont + 'История всех сообщений в чате:' + str(mem[0]) + "Тебе написал:" + message.from_user.first_name + "Текущий запрос:" + str(message.text.replace('!Элина', ''))
         print("Думает...")
         bot.send_message(message.chat.id, promt2)
         try:
@@ -215,13 +212,14 @@ def DeepSeek(message):
             logging.error("🛑 Сервера временно не доступны! 🛑")
             bot.send_message(message.chat.id, text)
         print("Ответила.")
-        add = str(rows[0]) + f"{message.from_user.first_name}: {message.text.replace("!", '')}" + f"Элиана: {full_response}" # pyright: ignore
+        add = str(mem[0]) + f"{message.from_user.first_name}: {message.text.replace("!", '')} | " + f"Элиана: {full_response}" # pyright: ignore
         cursor_.execute("UPDATE my_table SET context = ? WHERE id = ?", (add, 1))
         connect_.commit()
         connect_.close()
     else:
-        text = '🛑 Внимание проблемы с ИИ из за этого Элиана уходит в тех.работы! 🛑'
+        text = '🛑 Внимание элиана на тех.работах! 🛑'
         bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} использовал Элиану с запросом: {message.text.replace('!Элина', '')}")
 
 @bot.message_handler(regexp="!delete")
 def Delete(message):
@@ -231,6 +229,7 @@ def Delete(message):
         print(f"Удалено сообщение в чате {message.chat.id} от пользователя {message.from_user.first_name}")
     else:
         bot.send_message(message.chat.id, "У вас нет прав на удаление сообщений.")
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} удалил сообщение в чате {message.chat.id}")
 
 @bot.message_handler(regexp="!рп")
 def rp_switch(message):
@@ -243,6 +242,7 @@ def rp_switch(message):
         rp_mode_switch = 1
         text = 'Рп режим включен'
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} переключил РП режим на {rp_mode_switch}")
 
 @bot.message_handler(regexp="!отключить элиану")
 def ai_switch(message):
@@ -264,14 +264,18 @@ def message(message):
 
 @bot.message_handler(regexp="!дать еды")
 def eat(message):
-    conn = sqlite3.connect(fr"/root/C#/game.db", check_same_thread=False)
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\game.db", check_same_thread=False)
     cursor = conn.cursor()
+    connect_ = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\context.db", check_same_thread=False)
+    cursor_ = connect_.cursor()
+    cursor_.execute("SELECT context FROM my_table WHERE id = ?", (1,))
+    mem = cursor_.fetchone()
     if 0 == ai:
         text = ""
         global eat_switch
         global eat_person
         if 1 == eat_switch:
-            prompt = templat + f"Тебя покормили но ты уже наелась а накармил же тебя {message.from_user.first_name}" + role_chat1 + message.from_user.first_name + promt1 + str(message.text.replace('!дать еды', ''))
+            prompt = templat + f"Тебя покормили но ты уже наелась а накармил же тебя {message.from_user.first_name}" + role_chat1 + message.from_user.first_name + promt1 + str(message.text.replace('!дать еды', '') + 'История всех сообщений в чате:' + str(mem[0]))
             bot.send_message(message.chat.id, promt2)
             result = ollama.generate(model=model, prompt=prompt , think=True , stream=True)
             full_response = ""
@@ -283,7 +287,7 @@ def eat(message):
         elif 0 == eat_switch:
             eat_person = f'{message.from_user.first_name}'
             eat_switch = 1
-            prompt = templat + f'Тебя накармил {message.from_user.first_name} и ты наелась и довольна' + role_chat1 + message.from_user.first_name + promt1 + str(message.text.replace('!дать еды', ''))
+            prompt = templat + f'Тебя накармил {message.from_user.first_name} и ты наелась и довольна' + role_chat1 + message.from_user.first_name + promt1 + str(message.text.replace('!дать еды', '') + 'История всех сообщений в чате:' + str(mem[0]))
             bot.send_message(message.chat.id, promt2)
             result = ollama.generate(model=model, prompt=prompt , think=True , stream=True)
             full_response = ""
@@ -302,6 +306,8 @@ def eat(message):
         text = '(Вы слышите отдоленный голос из пустоты)'
         bot.send_message(message.chat.id, text)
     conn.close()
+    connect_.close()
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} использовал команду !дать еды с аргументом {message.text.replace('!дать еды', '')}")
 
 @bot.message_handler(regexp="!скрепки")
 def eat_ball(message):
@@ -312,10 +318,11 @@ def eat_ball(message):
     else:
         text = f"У вас {rows[0]} скрепка"
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} проверил баланс скрепок. Баланс: {rows[0]}")
 
 @bot.message_handler(regexp="!коллекция")
 def collection(message):
-    connect = sqlite3.connect(fr"/root/C#/value.db", check_same_thread=False)
+    connect = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\value.db", check_same_thread=False)
     cursor_collection = connect.cursor()
     cursor_collection.execute("SELECT value_1 FROM my_table WHERE id = ?", (message.from_user.id,))
     rows1 = cursor_collection.fetchone()
@@ -328,6 +335,7 @@ def collection(message):
     text = f"У вас {str(rows1[0])} Игрушка 'Портал', {str(rows2[0])} Игрушка 'Liable', {str(rows3[0])} Игрушка 'Вайбмен', {str(rows4[0])} Братец пепси рамшут"
     bot.send_message(message.chat.id, text)
     connect.close()
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} проверил свою коллекцию. Коллекция: {text}")
 
 @bot.message_handler(regexp="!ограбить магазин")
 def magazine(message):
@@ -343,6 +351,7 @@ def magazine(message):
         add = int(rows[0]) + 50
         set_money(add,id_message)
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} попытался ограбить магазин. Результат: {text}")
 
 @bot.message_handler(regexp="!ограбить банк")
 def bank(message):
@@ -376,6 +385,7 @@ def bank(message):
             add = int(rows[0]) - 500
             set_money(add,id_message)
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} попытался ограбить банк. Результат: {text}")
 
 @bot.message_handler(regexp="!отправить")
 def send(message):
@@ -387,26 +397,28 @@ def send(message):
 
 @bot.message_handler(regexp="!описание")
 def opisanie(message):
-    conn_opisanie = sqlite3.connect(fr"/root/C#/opisanie.db")
+    conn_opisanie = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\opisanie.db")
     cursor_opisanie = conn_opisanie.cursor()
     cursor_opisanie.execute("SELECT opisanie FROM my_table WHERE id = ?", (message.from_user.id,))
     rows = cursor_opisanie.fetchone()
     bot.send_message(message.chat.id , text=f"Описание: {rows[0]}")
     conn_opisanie.close()
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} проверил свое описание. Описание: {rows[0]}")
 
 @bot.message_handler(regexp="!сменить описание")
 def sm_opisanie(message):
-    conn_opisanie = sqlite3.connect(fr"/root/C#/opisanie.db")
+    conn_opisanie = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\opisanie.db")
     cursor_opisanie = conn_opisanie.cursor()
     add = message.text.replace('!сменить описание ','')
     cursor_opisanie.execute("UPDATE my_table SET opisanie = ? WHERE id = ?", (add, message.from_user.id))
     conn_opisanie.commit()
     bot.send_message(message.chat.id , text=f"Описание успешно изменено")
     conn_opisanie.close()
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} изменил свое описание на: {add}")
 
 @bot.message_handler(regexp="<сменить описание")
 def test(message):
-    conn_opisanie = sqlite3.connect(fr"/root/C#/opisanie.db")
+    conn_opisanie = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\opisanie.db")
     cursor_opisanie = conn_opisanie.cursor()
     cursor_opisanie.execute('SELECT opisanie FROM my_table')
     rows = cursor_opisanie.fetchall()
@@ -417,7 +429,7 @@ def test(message):
 
 @bot.message_handler(regexp="<балл управление")
 def eat_plus(message):
-    conn = sqlite3.connect(fr"/root/C#/game.db", check_same_thread=False)
+    conn = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\game.db", check_same_thread=False)
     cursor = conn.cursor()
     if 5609485310 == message.from_user.id:
         if f'<балл управление + {message.text.replace('<балл управление + ','')}' == message.text:
@@ -455,6 +467,7 @@ def eat_plus(message):
             text = f"У вас {rows[0]} скрепка"
         bot.send_message(message.chat.id, text)
     conn.close()
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} использовал команду <балл управление с аргументом {message.text.replace('<балл управление ', '')} для пользователя {message.reply_to_message.from_user.first_name}. Результат: {text}") # pyright: ignore
 
 @bot.message_handler(regexp="!казино")
 def casino(message):
@@ -475,6 +488,7 @@ def casino(message):
     elif 10 >= rows[0]:
         text = 'Недостаточно скрепок. Ставка: 10 скрепок'
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} сыграл в казино. Результат: {text}")
 
 @bot.message_handler(regexp="!скрепка передать")
 def transit(message):
@@ -491,6 +505,7 @@ def transit(message):
     else:
         text = 'Не хватает'
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} попытался передать {message.text.replace('!скрепка передать ', '')} скрепок пользователю {message.reply_to_message.from_user.first_name}. Результат: {text}")
 
 @bot.message_handler(regexp="!купить коллекционку")
 def pay_collection(message):
@@ -502,6 +517,7 @@ def pay_collection(message):
     btn4 = types.InlineKeyboardButton("Братец пепси рамшут. Цена 1000", callback_data="btn4")
     markup.add(btn1 , btn2 , btn3 , btn4)
     bot.send_message(message.chat.id, text , reply_markup=markup)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} открыл каталог коллекционок")
 
 
 @bot.message_handler(regexp="!панель")
@@ -522,6 +538,7 @@ def rep_minus(message):
     set_rep(current - 1, target_id)
     text = f"Вы успешно понизили репутацию пользователя {message.reply_to_message.from_user.first_name} на 1 балл. Текущая репутация: {get_rep(target_id)}"
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} понизил репутацию пользователя {message.reply_to_message.from_user.first_name} на 1 балл. Текущая репутация: {get_rep(target_id)}")
 
 @bot.message_handler(regexp=r"^!\+$")
 def rep_plus(message):
@@ -530,12 +547,14 @@ def rep_plus(message):
     set_rep(current + 1, target_id)
     text = f"Вы успешно повысили репутацию пользователя {message.reply_to_message.from_user.first_name} на 1 балл. Текущая репутация: {get_rep(target_id)}"
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} повысил репутацию пользователя {message.reply_to_message.from_user.first_name} на 1 балл. Текущая репутация: {get_rep(target_id)}")
 
 @bot.message_handler(regexp="!репутация")
 def show_rep(message):
     id_message = message.from_user.id
     text = f"Ваша репутация: {get_rep(id_message)}"
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} проверил свою репутацию. Репутация: {get_rep(id_message)}")
 
 @bot.message_handler(regexp="!репутация пользователя")
 def show_rep_user(message):
@@ -545,6 +564,7 @@ def show_rep_user(message):
     target_id = message.reply_to_message.from_user.id
     text = f"Репутация пользователя {message.reply_to_message.from_user.first_name}: {get_rep(target_id)}"
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} проверил репутацию пользователя {message.reply_to_message.from_user.first_name}. Репутация: {get_rep(target_id)}")
 
 @bot.message_handler(regexp="!Мафия")
 def mafia(message):
@@ -561,6 +581,7 @@ def vip(message):
     else:
         text += "\n\nУ вас нет VIP статуса. Чтобы приобрести VIP статус, пропишите !купить VIP."
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} проверил информацию о VIP статусе. VIP статус: {value_vip}")
 
 @bot.message_handler(regexp="!купить VIP")
 def buy_vip(message):
@@ -575,6 +596,7 @@ def buy_vip(message):
     else:
         text = "Недостаточно скрепок. Цена VIP статуса: 500 скрепок."
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} попытался купить VIP статус. Результат: {text}")
 
 @bot.message_handler(regexp='!я ')
 def kto(message):
@@ -582,6 +604,7 @@ def kto(message):
     random_namber = random.randint(1,100)
     text = "Ты " + reqeust + " на " + str(random_namber) + "%."
     bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} использовал команду !я с аргументом {reqeust}. Результат: {text}")
 
 @bot.message_handler(regexp='!пожениться')
 def marry(message):
@@ -601,10 +624,129 @@ def marry(message):
         btn2 = types.InlineKeyboardButton("Нет", callback_data="marry_no")
         markup.add(btn1, btn2)
         bot.send_message(message.chat.id, text,reply_markup=markup)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} попытался пожениться на пользователе {message.reply_to_message.from_user.first_name}. Результат: предложение отправлено")
+
+@bot.message_handler(regexp='!развестись')
+def divorce(message):
+    id_user = message.from_user.id
+    id_user_reply = message.reply_to_message.from_user.id
+    nick_user_reply = message.reply_to_message.first_name
+    nick_user = message.from_user.first_name
+    if id_user == id_user_reply:
+        text = "Вы не можете развестись с собой!"
+        bot.send_message(message.chat.id, text)
+    else:
+        connect_marry = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\wedding.db", check_same_thread=False)
+        cursor_marry = connect_marry.cursor()
+        cursor_marry.execute("SELECT id FROM my_table WHERE id = ?", (message.from_user.id,))
+        rows_id = cursor_marry.fetchone()
+        if str(rows_id[0]) == str(id_user_reply):
+            cursor_marry.execute("UPDATE my_table SET value_1 = ? WHERE id = ?", (0, message.from_user.id))
+            cursor_marry.execute("UPDATE my_table SET value_1 = ? WHERE id = ?", (0, message.reply_to_message.from_user.id))
+            connect_marry.commit()
+            text = f"Вы успешно развелись с {nick_user_reply}."
+            bot.send_message(message.chat.id, text)
+        else:
+            text = f"Вы не состоите в браке с {nick_user_reply}."
+            bot.send_message(message.chat.id, text)
+        connect_marry.close()
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} попытался развестись с пользователем {message.reply_to_message.from_user.first_name}. Результат: {text}")
+
+@bot.message_handler(regexp='!tag')
+def tag(message):
+    if message.reply_to_message == None:
+        connect_tag = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\tag.db", check_same_thread=False)
+        cursor_tag = connect_tag.cursor()
+        cursor_tag.execute("SELECT tag FROM my_table WHERE id = ?", (message.from_user.id,))
+        rows = cursor_tag.fetchone()
+        cursor_tag.close()
+        rows = str(rows)
+        print(rows)
+        rows1 = rows.replace(" ","").replace("(", "").replace(")", "").replace("'", "")
+        if rows1 == "None,":
+            text = "У вас нет тега."
+        else:
+            text = f"Ваш тег: {rows1}"
+        bot.send_message(message.chat.id, text)
+    else:
+        connect_tag = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\tag.db", check_same_thread=False)
+        cursor_tag = connect_tag.cursor()
+        cursor_tag.execute("SELECT tag FROM my_table WHERE id = ?", (message.reply_to_message.from_user.id,))
+        rows = cursor_tag.fetchone()
+        cursor_tag.close()
+        rows = str(rows)
+        print(rows)
+        rows1 = rows.replace(" ","").replace("(", "").replace(")", "").replace("'", "")
+        if rows1 == "None,":
+            text = "У пользователя нет тега."
+        else:
+            text = f"Тег пользователя: {rows1}"
+        bot.send_message(message.chat.id, text)
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} проверил тег пользователя {message.reply_to_message.from_user.first_name if message.reply_to_message else 'свой'}. Результат: {text}")
+
+@bot.message_handler(regexp='<tag добавить ')
+def add_tag(message):
+    if 5609485310 or 5764338287 == message.from_user.id:
+        connect_tag = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\tag.db", check_same_thread=False)
+        cursor_tag = connect_tag.cursor()
+        add = message.text.replace('<tag добавить ','')
+        cursor_tag.execute("SELECT tag FROM my_table WHERE id = ?", (message.reply_to_message.from_user.id,))
+        rows = cursor_tag.fetchone()
+        rows = str(rows)
+        print(rows)
+        rows1 = rows.replace(" ","").replace("(", "").replace(")", "").replace("'", "")
+        rows2 = rows.replace(" ","").replace("(", "").replace(")", "").replace("'", "").replace(",","")
+        if rows2 == "None":
+            add = add
+        else:
+            add = rows1 + " " + add
+        cursor_tag.execute("UPDATE my_table SET tag = ? WHERE id = ?", (add, message.reply_to_message.from_user.id))
+        connect_tag.commit()
+        connect_tag.close()
+        text = f"Тег успешно установлен: {add}"
+        bot.send_message(message.chat.id, text)
+    else:
+        text = "У вас нет прав на добавление тега."
+        bot.send_message(message.chat.id, text)
+
+@bot.message_handler(regexp='<tag установить ')
+def set_tag(message):
+    if 5609485310 or 5764338287 == message.from_user.id:
+        connect_tag = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\tag.db", check_same_thread=False)
+        cursor_tag = connect_tag.cursor()
+        add = message.text.replace('<tag установить ','')
+        cursor_tag.execute("UPDATE my_table SET tag = ? WHERE id = ?", (add, message.reply_to_message.from_user.id))
+        connect_tag.commit()
+        connect_tag.close()
+        text = f"Тег успешно установлен: {add}"
+        bot.send_message(message.chat.id, text)
+        bot.set_chat_administrator_custom_title(chat_id=message.chat.id, user_id=message.reply_to_message.from_user.id, custom_title=add)
+    else:
+        text = "У вас нет прав на установку тега."
+        bot.send_message(message.chat.id, text)
+
+@bot.message_handler(regexp="!добавить описание")
+def add_opisanie(message):
+    conn_opisanie = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\opisanie.db")
+    cursor_opisanie = conn_opisanie.cursor()
+    cursor_opisanie.execute("SELECT opisanie FROM my_table WHERE id = ?", (message.from_user.id,))
+    rows = cursor_opisanie.fetchone()
+    add = rows[0] + message.text.replace('!добавить описание ','')
+    cursor_opisanie.execute("UPDATE my_table SET opisanie = ? WHERE id = ?", (add, message.from_user.id))
+    conn_opisanie.commit()
+    bot.send_message(message.chat.id , text=f"Описание успешно изменено")
+    conn_opisanie.close()
+    bot.send_message(-1003733043110, f"Пользователь {message.from_user.first_name} добавил к своему описанию: {message.text.replace('!добавить описание ','')}")
+
+@bot.message_handler(regexp="!v" or "!version")
+def get_version(message):
+    text = f"Текущая версия {version}"
+    bot.send_message(message.chat.id,text)
+
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
-    connect = sqlite3.connect(fr"/root/C#/value.db", check_same_thread=False)
+    connect = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\value.db", check_same_thread=False)
     cursor_collection = connect.cursor()
     id_message = call.from_user.id
     ball = get_money(id_message)
@@ -661,40 +803,43 @@ def callback_inline(call):
             bot.answer_callback_query(call.id, "Недостаточно скрепок!")
         connect.close()
     elif call.data == "btn_ai":
-        global ai
-        text = ""
-        if 1 == ai:
-            ai = 0
-            text = 'Элиана включена'
-        elif 0 == ai:
-            ai = 1
-            text = 'Элиана выключена'
-        bot.answer_callback_query(call.id, text)
+        if 5609485310 or 5764338287 == call.id:
+            global ai
+            text = ""
+            if 1 == ai:
+                ai = 0
+                text = 'Элиана включена'
+            elif 0 == ai:
+                ai = 1
+                text = 'Элиана выключена'
+            bot.answer_callback_query(call.id, text)
     elif call.data == "btn_rp":
-        global rp_mode_switch
-        text = ""
-        if 1 == rp_mode_switch:
-            rp_mode_switch = 0
-            text = 'Рп режим выключен'
-        elif 0 == rp_mode_switch:
-            rp_mode_switch = 1
-            text = 'Рп режим включен'
-        bot.answer_callback_query(call.id, text)
+        if 5609485310 or 5764338287 == call.id:
+            global rp_mode_switch
+            text = ""
+            if 1 == rp_mode_switch:
+                rp_mode_switch = 0
+                text = 'Рп режим выключен'
+            elif 0 == rp_mode_switch:
+                rp_mode_switch = 1
+                text = 'Рп режим включен'
+            bot.answer_callback_query(call.id, text)
     elif call.data == "btn_ball":
-        connect_ball = sqlite3.connect(fr"/root/C#/game.db", check_same_thread=False)
-        cursor_ball = connect_ball.cursor()
-        cursor_ball.execute("SELECT id FROM food_entries")
-        rows_id = cursor_ball.fetchall()
-        text = "Баланс всех пользователей:\n"
-        for row in rows_id:
-            cursor_ball.execute("SELECT eat_point FROM food_entries WHERE id = ?", (row[0],))
-            rows_ball = cursor_ball.fetchone()
-            text += f"Пользователь с id {row[0]}: {rows_ball[0]} скрепок\n"
-        bot.answer_callback_query(call.id, text)
-        connect_ball.close()
+        if 5609485310 or 5764338287 == call.id:
+            connect_ball = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\game.db", check_same_thread=False)
+            cursor_ball = connect_ball.cursor()
+            cursor_ball.execute("SELECT id FROM food_entries")
+            rows_id = cursor_ball.fetchall()
+            text = "Баланс всех пользователей:\n"
+            for row in rows_id:
+                cursor_ball.execute("SELECT eat_point FROM food_entries WHERE id = ?", (row[0],))
+                rows_ball = cursor_ball.fetchone()
+                text += f"Пользователь с id {row[0]}: {rows_ball[0]} скрепок\n"
+            bot.answer_callback_query(call.id, text)
+            connect_ball.close()
     elif call.data == "marry_yes":
         print(marry_data)
-        connect_marry = sqlite3.connect(fr"/root/C#/wedding.db", check_same_thread=False)
+        connect_marry = sqlite3.connect(fr"C:\Users\M4lph4s\Desktop\bot\wedding.db", check_same_thread=False)
         cursor_marry = connect_marry.cursor()
         id_user = marry_data[0]
         chat_id = marry_data[2]
@@ -730,6 +875,5 @@ def callback_inline(call):
         print(id_user_reply)
         if str(call.from_user.id) == id_user_reply:
             bot.send_message(chat_id=chat_id, text=f"{name_user_reply} отказался от предложения {name_user}!")
-
 
 bot.infinity_polling()
